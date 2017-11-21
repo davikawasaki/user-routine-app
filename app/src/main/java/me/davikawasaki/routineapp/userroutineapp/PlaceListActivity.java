@@ -33,7 +33,7 @@ public class PlaceListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_place_list);
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null){
+        if (actionBar != null) {
             actionBar.setTitle(R.string.list_place_txt_title);
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setIcon(R.drawable.ic_back_white);

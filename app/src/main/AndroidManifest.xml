@@ -21,7 +21,8 @@
         <activity android:name=".RegisterRoutineActivity" />
         <activity android:name=".PlaceListActivity" />
         <activity android:name=".RoutineListActivity" />
-        <activity android:name=".PlaceTypeListActivity"></activity>
+        <activity android:name=".PlaceTypeListActivity" />
+        <activity android:name=".AboutActivity"></activity>
     </application>
 
 </manifest>
