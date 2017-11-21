@@ -14,5 +14,8 @@
         <item
             android:id="@+id/itemMenuMainActivityPlaces"
             android:title="@string/main_menu_txt_list_places" />
+        <item
+            android:id="@+id/itemMenuMainActivityAbout"
+            android:title="@string/main_menu_txt_about" />
     </group>
 </menu>

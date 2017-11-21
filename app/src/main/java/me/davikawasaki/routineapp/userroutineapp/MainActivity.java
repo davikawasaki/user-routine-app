@@ -109,6 +109,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.itemMenuMainActivityRoutines:
                 seeRoutinesList();
                 return true;
+            case R.id.itemMenuMainActivityAbout:
+                seeAboutPage();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -145,6 +148,11 @@ public class MainActivity extends AppCompatActivity {
     public void seeRoutinesList() {
         Intent intent = new Intent(this, RoutineListActivity.class);
         startActivityForResult(intent, REQUEST_ROUTINE_LIST);
+    }
+
+    public void seeAboutPage() {
+        Intent intent = new Intent(this, AboutActivity.class);
+        startActivity(intent);
     }
 
     private void changeRoutine(int position){
