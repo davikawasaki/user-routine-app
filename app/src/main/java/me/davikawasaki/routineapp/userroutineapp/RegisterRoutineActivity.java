@@ -125,6 +125,7 @@ public class RegisterRoutineActivity extends AppCompatActivity
                 connection.getPlaceDAO().refresh(routine.getOriginPlace());
                 connection.getPlaceDAO().refresh(routine.getDestinationPlace());
 
+                // Select properly spinner option from originPlace name
                 ArrayAdapter<Place> arraySpinnerOriginPlace = (ArrayAdapter<Place>)
                         spinnerOriginPlace.getAdapter();
                 int originPos = ServicesPlace.getPositionFromArrayAdapter(
@@ -133,6 +134,7 @@ public class RegisterRoutineActivity extends AppCompatActivity
                 textOriginDateTime.setText(UtilsDateTime.convertDateTimeToString(
                         routine.getStartDateTime()));
 
+                // Select properly spinner option from destinationPlace name
                 ArrayAdapter<Place> arraySpinnerDestinationPlace = (ArrayAdapter<Place>)
                         spinnerDestinationPlace.getAdapter();
                 int destinationPos = ServicesPlace.getPositionFromArrayAdapter(
@@ -140,6 +142,11 @@ public class RegisterRoutineActivity extends AppCompatActivity
                 spinnerDestinationPlace.setSelection(destinationPos);
                 textDestinationDateTime.setText(UtilsDateTime.convertDateTimeToString(
                         routine.getEndDateTime()));
+
+                // Copy routine origin and destination date time to originDate and destinationDate
+                // This is done in case user only updates places and doesn't update dates
+                originDate      = new Date(routine.getStartDateTime().getTime());
+                destinationDate = new Date(routine.getEndDateTime().getTime());
 
             } catch (SQLException e) {
                 e.printStackTrace();
