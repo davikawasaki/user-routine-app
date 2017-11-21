@@ -5,25 +5,23 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import me.davikawasaki.routineapp.userroutineapp.config.DatabaseHelper;
@@ -34,11 +32,6 @@ import me.davikawasaki.routineapp.userroutineapp.utils.UtilsGUI;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Static request variables
-    private static final int REQUEST_NEW_ROUTINE    = 1;
-    private static final int REQUEST_CHANGE_ROUTINE = 2;
-    private static final int REQUEST_ROUTINE_LIST   = 3;
-
     // Routine Id from Shared Preferences
     private int routineInCourseId = 0;
 
@@ -47,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView originDateTimeText;
     private TextView destinationPlaceText;
     private ListView listViewRoutines;
-    private TextView noRoutinesRegistered;
 
     // Routine Array Adapter List
     private ArrayAdapter<Routine> adapterRoutineList;
@@ -65,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         listViewRoutines = (ListView) findViewById(R.id.listViewMainRoutines);
-        noRoutinesRegistered = (TextView) findViewById(R.id.textMainNoRoutine);
 
         listViewRoutines.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -73,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
                 changeRoutine(position);
             }
         });
+
+        listViewRoutines.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        listViewRoutines.setMultiChoiceModeListener(onMultiChoiceModeListener());
 
         fillRoutineList();
         getRoutineInCourse();
@@ -117,12 +111,86 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public AbsListView.MultiChoiceModeListener onMultiChoiceModeListener() {
+        return new AbsListView.MultiChoiceModeListener() {
+            @Override
+            public void onItemCheckedStateChanged(android.view.ActionMode mode, int position, long id, boolean checked) {
+
+                boolean selected = listViewRoutines.isItemChecked(position);
+
+                View view = listViewRoutines.getChildAt(position);
+
+                if (selected) view.setBackgroundColor(Color.LTGRAY);
+                else view.setBackgroundColor(Color.TRANSPARENT);
+
+                int totalSelected = listViewRoutines.getCheckedItemCount();
+
+                if (totalSelected > 0) {
+
+                    mode.setTitle(getResources().getQuantityString(R.plurals.selected,
+                            totalSelected,
+                            totalSelected));
+                }
+
+                mode.invalidate();
+            }
+
+            @Override
+            public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.main_multiple_selected_menu, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
+                // Hide edit button for two or more selected items
+                if (listViewRoutines.getCheckedItemCount() > 1) menu.getItem(0).setVisible(false);
+                else menu.getItem(0).setVisible(true);
+                return true;
+            }
+
+            @Override
+            public boolean onActionItemClicked(android.view.ActionMode mode, MenuItem item) {
+
+                switch(item.getItemId()){
+                    case R.id.itemMenuMainSelectedActivityEdit:
+                        for (int position = listViewRoutines.getChildCount(); position >= 0; position--){
+                            if (listViewRoutines.isItemChecked(position)){
+                                changeRoutine(position);
+                            }
+                        }
+                        mode.finish();
+                        return true;
+
+                    case R.id.itemMenuMainSelectedActivityRemove:
+                        removeRoutines();
+                        mode.finish();
+                        return true;
+
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public void onDestroyActionMode(android.view.ActionMode mode) {
+                for (int position = 0; position < listViewRoutines.getChildCount(); position++){
+                    View view = listViewRoutines.getChildAt(position);
+                    view.setBackgroundColor(Color.TRANSPARENT);
+                }
+            }
+        };
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if((requestCode == REQUEST_NEW_ROUTINE || requestCode == REQUEST_ROUTINE_LIST)
+        if((requestCode == RoutineListActivity.REQUEST_NEW_ROUTINE ||
+                requestCode == RoutineListActivity.REQUEST_ROUTINE_LIST)
                 && resultCode == Activity.RESULT_OK){
             getRoutineInCourse();
-        } else if(requestCode == REQUEST_CHANGE_ROUTINE && resultCode == Activity.RESULT_OK) {
+        } else if(requestCode == RoutineListActivity.REQUEST_CHANGE_ROUTINE &&
+                resultCode == Activity.RESULT_OK) {
             Bundle bundle = data.getExtras();
             int routineId = bundle.getInt(RegisterRoutineActivity.ID);
 
@@ -131,13 +199,15 @@ public class MainActivity extends AppCompatActivity {
             selectedPosition = -1;
 
             adapterRoutineList.notifyDataSetChanged();
+        } else {
+            fillRoutineList();
         }
     }
 
     public void addNewRoutine() {
         Intent intent = new Intent(this, RegisterRoutineActivity.class);
         intent.putExtra(RegisterRoutineActivity.MODE, RegisterRoutineActivity.NEW);
-        startActivityForResult(intent, REQUEST_NEW_ROUTINE);
+        startActivityForResult(intent, RoutineListActivity.REQUEST_NEW_ROUTINE);
     }
 
     public void seePlacesList() {
@@ -147,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void seeRoutinesList() {
         Intent intent = new Intent(this, RoutineListActivity.class);
-        startActivityForResult(intent, REQUEST_ROUTINE_LIST);
+        startActivityForResult(intent, RoutineListActivity.REQUEST_ROUTINE_LIST);
     }
 
     public void seeAboutPage() {
@@ -166,7 +236,26 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(RegisterRoutineActivity.MODE, RegisterRoutineActivity.CHANGE);
         intent.putExtra(RegisterRoutineActivity.ID, routine.getId());
 
-        startActivityForResult(intent, REQUEST_CHANGE_ROUTINE);
+        startActivityForResult(intent, RoutineListActivity.REQUEST_CHANGE_ROUTINE);
+    }
+
+    private void removeRoutines() {
+        List<Routine> removeRoutineList = new ArrayList<>();
+        for (int position = listViewRoutines.getChildCount(); position >= 0; position--){
+            if (listViewRoutines.isItemChecked(position)){
+                removeRoutineList.add(routineList.get(position));
+            }
+        }
+        // Database request to remove
+        ServicesRoutine.removeRoutines(removeRoutineList, this);
+        // Remove items from routineList
+        routineList = ServicesRoutine.iterateAndRemoveFromList(routineList, removeRoutineList);
+        adapterRoutineList.notifyDataSetChanged();
+        adapterRoutineList = new ArrayAdapter<Routine>(this,
+                android.R.layout.simple_list_item_1,
+                routineList);
+
+        listViewRoutines.setAdapter(adapterRoutineList);
     }
 
     private void getRoutineInCourse() {
@@ -304,8 +393,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        if(routineList.size() > 0) noRoutinesRegistered.setVisibility(View.GONE);
-
         adapterRoutineList = new ArrayAdapter<Routine>(this,
                 android.R.layout.simple_list_item_1,
                 routineList);
@@ -329,5 +416,17 @@ public class MainActivity extends AppCompatActivity {
         // Load updated routine list
         listViewRoutines = (ListView) findViewById(R.id.listViewMainRoutines);
         fillRoutineList();
+
+        // Reset click listener and choice modes
+        listViewRoutines.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                changeRoutine(position);
+            }
+        });
+        listViewRoutines.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        listViewRoutines.setMultiChoiceModeListener(onMultiChoiceModeListener());
+
+        adapterRoutineList.notifyDataSetChanged();
     }
 }
