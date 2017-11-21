@@ -5,7 +5,7 @@
     <string name="title_activity_register_place_type">Cadastro de Tipos de Locais</string>
     <!-- Main Activity -->
     <string name="main_txt_title">RoutineU!</string>
-    <string name="main_txt_no_routine">Você não possui nenhum trajeto em curso.</string>
+    <string name="main_txt_no_routine">Você não possui nenhum trajeto em curso!</string>
     <string name="main_txt_routine_list">Últimos Trajetos</string>
     <!-- Main Routine Activity -->
     <string name="main_transit_txt_title">Você está em trânsito!</string>
@@ -40,7 +40,7 @@
     <string name="register_place_txt_state">Estado</string>
     <string name="register_place_txt_country">País</string>
     <!-- Place Type List Activity -->
-    <string name="list_place_types_txt_title">Tipos de Locais Cadastrados</string>
+    <string name="list_place_types_txt_title">Tipos Cadastrados</string>
     <!-- Place List Activity -->
     <string name="list_place_txt_title">Locais Cadastrados</string>
     <!-- Routine List Activity -->
@@ -70,19 +70,23 @@
     <string name="txt_clear_fields_toast">Campos limpados com sucesso!</string>
     <string name="register_place_type_txt_name_empty">Nome do tipo está vazio!</string>
     <string name="register_place_type_txt_name_used">Nome do tipo já existente!</string>
-    <string name="register_place_txt_name_empty">Nome do lugar está vazio!</string>
-    <string name="register_place_txt_name_used">Nome do tipo já existente!</string>
+    <string name="register_place_txt_name_empty">Nome do local está vazio!</string>
+    <string name="register_place_txt_name_used">Nome do local já existente!</string>
     <string name="register_routine_txt_empty_places">Cadastre ao menos dois locais antes de cadastrar um trajeto!</string>
     <string name="register_routine_txt_origin_destination_equals">Local de origem não pode ser o mesmo de destino!</string>
     <string name="txt_error_ormlite">Aconteceu um erro inesperado! Tente novamente mais tarde.</string>
     <string name="txt_confirmation_msg_cancel_routine_modal">Tem certeza que quer cancelar o trajeto?</string>
     <string name="txt_confirmation_msg_finish_routine_modal">Já acabou mesmo esse trajeto?</string>
-    <string name="txt_button_ok_modal">Ok</string>
+    <string name="txt_button_ok_modal" translatable="false">Ok</string>
     <string name="txt_button_cancel_modal">Cancelar</string>
     <string name="txt_button_yes_modal">Sim</string>
     <string name="txt_button_no_modal">Não</string>
     <string name="txt_warning_title_modal">Aviso</string>
     <string name="txt_confirmation_title_modal">Confirmação</string>
     <!-- Shared Preferences -->
-    <string name="preferences_routine_in_course">me.davikawasaki.routineapp.userroutineapp.ROUTINE_IN_COURSE_PREFERENCE</string>
+    <string name="preferences_routine_in_course" translatable="false">me.davikawasaki.routineapp.userroutineapp.ROUTINE_IN_COURSE_PREFERENCE</string>
+    <string name="about_txt_title">Sobre a Aplicação</string>
+    <string name="about_txt_app_details">Aplicativo de registro de rotinas do usuário, cadastrando locais e períodos percorridos pelo mesmo.</string>
+    <string name="about_txt_author" translatable="false">Davi Kawasaki - RA 1137280</string>
+    <string name="main_menu_txt_about">Sobre</string>
 </resources>
