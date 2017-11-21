@@ -70,4 +70,10 @@
     <string name="about_txt_title">Application About</string>
     <string name="about_txt_app_details">Application of user routines registration, with places and periods where she/he have been gone.</string>
     <string name="main_menu_txt_about">About</string>
+    <string name="main_menu_selected_txt_edit">Edit Item</string>
+    <string name="main_menu_selected_text_remove">Remove Item</string>
+    <plurals name="selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
 </resources>
