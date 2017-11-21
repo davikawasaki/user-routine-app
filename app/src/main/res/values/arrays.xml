@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="starting_types">
+        <item>@string/types_txt_college</item>
+        <item>@string/types_txt_work</item>
+        <item>@string/types_txt_home</item>
+        <item>@string/types_txt_bookstore</item>
+        <item>@string/types_txt_doctor</item>
+    </string-array>
+</resources>
