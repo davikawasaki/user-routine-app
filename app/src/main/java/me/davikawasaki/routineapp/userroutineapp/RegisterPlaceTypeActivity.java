@@ -1,18 +1,24 @@
 package me.davikawasaki.routineapp.userroutineapp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import me.davikawasaki.routineapp.userroutineapp.config.DatabaseHelper;
 import me.davikawasaki.routineapp.userroutineapp.model.PlaceType;
+import me.davikawasaki.routineapp.userroutineapp.services.ServicesPlaceType;
 import me.davikawasaki.routineapp.userroutineapp.utils.UtilsGUI;
 import me.davikawasaki.routineapp.userroutineapp.utils.UtilsString;
 
@@ -25,9 +31,15 @@ public class RegisterPlaceTypeActivity extends AppCompatActivity {
     public static final int    CHANGE = 2;
 
     // Layout components
+    private TextView textViewPlaceTypeTitle;
     private EditText editPlaceTypeName;
+    private Button   buttonSavePlaceType;
+
     // Place type instance
     private PlaceType placeType;
+
+    // Intent mode flag
+    private int mode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +52,32 @@ public class RegisterPlaceTypeActivity extends AppCompatActivity {
             actionBar.setIcon(R.drawable.ic_back_white);
         }
 
-        editPlaceTypeName = (EditText) findViewById(R.id.textRegisterPlaceTypeNameInput);
+        textViewPlaceTypeTitle = (TextView) findViewById(R.id.textRegisterPlaceTypeTitle);
+        editPlaceTypeName      = (EditText) findViewById(R.id.textRegisterPlaceTypeNameInput);
+        buttonSavePlaceType    = (Button)   findViewById(R.id.buttonRegisterPlaceTypeSave);
 
-        placeType = new PlaceType();
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+
+        mode = bundle.getInt(MODE);
+
+        if (mode == CHANGE) {
+
+            placeType = ServicesPlaceType.getPlaceTypeFromId(bundle.getInt(ID), this);
+
+            if(placeType == null) {
+                finish();
+                return;
+            }
+
+            editPlaceTypeName.setText(placeType.getName());
+
+            actionBar.setTitle(R.string.update_place_type_txt_bar_title);
+            textViewPlaceTypeTitle.setText(R.string.update_place_type_txt_title);
+            buttonSavePlaceType.setText(R.string.update_place_type_txt_save_button);
+
+        } else placeType = new PlaceType();
+
     }
 
     @Override
@@ -72,28 +107,21 @@ public class RegisterPlaceTypeActivity extends AppCompatActivity {
 
         if(name == null) return;
 
-        try {
-
-            DatabaseHelper connection = DatabaseHelper.getInstance(this);
-
-            List<PlaceType> list = connection.getPlaceTypeDAO()
-                                    .queryBuilder()
-                                    .where().eq(PlaceType.NAME, name)
-                                    .query();
-
-            if (list.size() > 0){
-                UtilsGUI.modalError(this, R.string.register_place_type_txt_name_used);
-                return;
-            }
-
+        if (mode == CHANGE) {
             placeType.setName(name);
-            connection.getPlaceTypeDAO().create(placeType);
 
-            setResult(Activity.RESULT_OK);
-            finish();
+            if(ServicesPlaceType.updatePlaceType(placeType, this)) {
+                Intent intent = new Intent();
+                intent.putExtra(ID, placeType.getId());
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            } else UtilsGUI.modalError(this, R.string.update_place_type_txt_name_used);
+        } else {
+            if(ServicesPlaceType.registerPlaceType(name, this)) {
+                setResult(Activity.RESULT_OK);
+                finish();
+            } else UtilsGUI.modalError(this, R.string.update_place_type_txt_name_used);
         }
     }
 }
