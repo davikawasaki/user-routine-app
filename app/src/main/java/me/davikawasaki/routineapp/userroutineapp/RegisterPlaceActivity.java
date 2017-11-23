@@ -1,22 +1,28 @@
 package me.davikawasaki.routineapp.userroutineapp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import me.davikawasaki.routineapp.userroutineapp.config.DatabaseHelper;
 import me.davikawasaki.routineapp.userroutineapp.model.Place;
 import me.davikawasaki.routineapp.userroutineapp.model.PlaceType;
+import me.davikawasaki.routineapp.userroutineapp.services.ServicesPlace;
+import me.davikawasaki.routineapp.userroutineapp.services.ServicesPlaceType;
 import me.davikawasaki.routineapp.userroutineapp.utils.UtilsGUI;
 import me.davikawasaki.routineapp.userroutineapp.utils.UtilsString;
 
@@ -29,16 +35,21 @@ public class RegisterPlaceActivity extends AppCompatActivity {
     public static final int    CHANGE = 2;
 
     // Layout components
+    private TextView textViewPlaceTitle;
     private EditText editPlaceName;
-    private Spinner spinnerPlaceType;
+    private Spinner  spinnerPlaceType;
     private EditText editPlaceAddress;
     private EditText editPlaceCity;
     private EditText editPlaceState;
     private EditText editPlaceCountry;
+    private Button   buttonSavePlace;
 
     // Place instance and place type list
     private Place place;
     private List<PlaceType> placeTypeList;
+
+    // Intent mode flag
+    private int mode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,16 +62,50 @@ public class RegisterPlaceActivity extends AppCompatActivity {
             actionBar.setIcon(R.drawable.ic_back_white);
         }
 
-        editPlaceName    = (EditText) findViewById(R.id.textRegisterPlaceNameInput);
-        spinnerPlaceType = (Spinner) findViewById(R.id.spinnerRegisterPlaceType);
-        editPlaceAddress = (EditText) findViewById(R.id.textRegisterPlaceAddressInput);
-        editPlaceCity    = (EditText) findViewById(R.id.textRegisterPlaceCityInput);
-        editPlaceState   = (EditText) findViewById(R.id.textRegisterPlaceStateInput);
-        editPlaceCountry = (EditText) findViewById(R.id.textRegisterPlaceCountryInput);
-
-        place = new Place();
+        textViewPlaceTitle = (TextView) findViewById(R.id.textRegisterPlaceTitle);
+        editPlaceName      = (EditText) findViewById(R.id.textRegisterPlaceNameInput);
+        spinnerPlaceType   = (Spinner)  findViewById(R.id.spinnerRegisterPlaceType);
+        editPlaceAddress   = (EditText) findViewById(R.id.textRegisterPlaceAddressInput);
+        editPlaceCity      = (EditText) findViewById(R.id.textRegisterPlaceCityInput);
+        editPlaceState     = (EditText) findViewById(R.id.textRegisterPlaceStateInput);
+        editPlaceCountry   = (EditText) findViewById(R.id.textRegisterPlaceCountryInput);
+        buttonSavePlace    = (Button)   findViewById(R.id.buttonRegisterPlaceSave);
 
         fillPlaceTypesSpinner();
+
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+
+        mode = bundle.getInt(MODE);
+
+        if (mode == CHANGE) {
+
+            place = ServicesPlace.getPlaceFromId(bundle.getInt(ID), this);
+
+            if(place == null) {
+                finish();
+                return;
+            }
+
+            // Set other editText fields
+            editPlaceName.setText(place.getName());
+            editPlaceAddress.setText(place.getAddress());
+            editPlaceCity.setText(place.getCity());
+            editPlaceState.setText(place.getState());
+            editPlaceCountry.setText(place.getCountry());
+
+            // Select properly spinner option from place type name
+            ArrayAdapter<PlaceType> arraySpinnerPlaceType = (ArrayAdapter<PlaceType>)
+                    spinnerPlaceType.getAdapter();
+            int typePos = ServicesPlaceType.getPositionFromArrayAdapter(
+                    arraySpinnerPlaceType, place.getPlaceType().toString());
+            spinnerPlaceType.setSelection(typePos);
+
+            actionBar.setTitle(R.string.update_place_txt_bar_title);
+            textViewPlaceTitle.setText(R.string.update_place_txt_title);
+            buttonSavePlace.setText(R.string.update_place_txt_save_button);
+
+        } else place = new Place();
     }
 
     @Override
@@ -90,16 +135,11 @@ public class RegisterPlaceActivity extends AppCompatActivity {
 
         placeTypeList = null;
 
-        try {
-            DatabaseHelper connection = DatabaseHelper.getInstance(this);
+        placeTypeList = ServicesPlaceType.getPlaceTypeList(this);
 
-            placeTypeList = connection.getPlaceTypeDAO()
-                    .queryBuilder()
-                    .orderBy(PlaceType.NAME, true)
-                    .query();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if(placeTypeList == null) {
+            finish();
+            return;
         }
 
         ArrayAdapter<PlaceType> spinnerPlaceTypeAdapter = new ArrayAdapter<PlaceType>(this,
@@ -125,33 +165,26 @@ public class RegisterPlaceActivity extends AppCompatActivity {
 
         if(name == null) return;
 
-        try {
-
-            DatabaseHelper connection = DatabaseHelper.getInstance(this);
-
-            List<Place> list = connection.getPlaceDAO()
-                    .queryBuilder()
-                    .where().eq(Place.NAME, name)
-                    .query();
-
-            if (list.size() > 0){
-                UtilsGUI.modalError(this, R.string.register_place_txt_name_used);
-                return;
-            }
-
+        if (mode == CHANGE) {
             place.setName(name);
-            if(placeType != null) place.setType(placeType);
-            if(!UtilsString.stringEmpty(address)) place.setAddress(address);
-            if(!UtilsString.stringEmpty(city)) place.setCity(city);
-            if(!UtilsString.stringEmpty(state)) place.setState(state);
-            if(!UtilsString.stringEmpty(country)) place.setCountry(country);
-            connection.getPlaceDAO().create(place);
+            place.setType(placeType);
+            place.setAddress(address);
+            place.setCity(city);
+            place.setState(state);
+            place.setCountry(country);
 
-            setResult(Activity.RESULT_OK);
-            finish();
+            if(ServicesPlace.updatePlace(place, this)) {
+                Intent intent = new Intent();
+                intent.putExtra(ID, place.getId());
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            } else UtilsGUI.modalError(this, R.string.update_place_txt_name_used);
+        } else {
+            if(ServicesPlace.registerPlace(name, placeType, address, city, state, country, this)) {
+                setResult(Activity.RESULT_OK);
+                finish();
+            } else UtilsGUI.modalError(this, R.string.update_place_txt_name_used);
         }
     }
 }
