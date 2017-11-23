@@ -5,8 +5,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+/**
+ * About Application Activity.
+ * Basic page with only information and return button.
+ * @see android.support.v7.app.AppCompatActivity
+ */
 public class AboutActivity extends AppCompatActivity {
 
+    /**
+     * On AboutActivity instantiation implements sequence of scripts.
+     * 1. Set content view with layout;
+     * 2. Display back button as drawable chevron left in actionBar.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,6 +30,13 @@ public class AboutActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Listener to menu options item selected.
+     * 1. Android Home Button: finish activity;
+     * 2. Default: call super method to check for updates;
+     * @param item
+     * @return selectedStatus
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
@@ -29,4 +47,5 @@ public class AboutActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
 }
