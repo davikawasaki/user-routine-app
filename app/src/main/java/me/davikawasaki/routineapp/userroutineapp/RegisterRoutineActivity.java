@@ -32,6 +32,7 @@ import me.davikawasaki.routineapp.userroutineapp.fragments.TimePickerFragment;
 import me.davikawasaki.routineapp.userroutineapp.model.Place;
 import me.davikawasaki.routineapp.userroutineapp.model.Routine;
 import me.davikawasaki.routineapp.userroutineapp.services.ServicesPlace;
+import me.davikawasaki.routineapp.userroutineapp.services.ServicesRoutine;
 import me.davikawasaki.routineapp.userroutineapp.utils.UtilsDateTime;
 import me.davikawasaki.routineapp.userroutineapp.utils.UtilsGUI;
 
@@ -114,43 +115,36 @@ public class RegisterRoutineActivity extends AppCompatActivity
 
             int id = bundle.getInt(ID);
 
-            try {
-                DatabaseHelper connection = DatabaseHelper.getInstance(this);
+            routine = ServicesRoutine.getRoutineFromId(bundle.getInt(ID), this);
 
-                routine = connection.getRoutineDAO().queryForId(id);
-
-                if(routine == null) return;
-
-                // Update places objects from foreign key
-                connection.getPlaceDAO().refresh(routine.getOriginPlace());
-                connection.getPlaceDAO().refresh(routine.getDestinationPlace());
-
-                // Select properly spinner option from originPlace name
-                ArrayAdapter<Place> arraySpinnerOriginPlace = (ArrayAdapter<Place>)
-                        spinnerOriginPlace.getAdapter();
-                int originPos = ServicesPlace.getPositionFromArrayAdapter(
-                        arraySpinnerOriginPlace, routine.getOriginPlace().toString());
-                spinnerOriginPlace.setSelection(originPos);
-                textOriginDateTime.setText(UtilsDateTime.convertDateTimeToString(
-                        routine.getStartDateTime()));
-
-                // Select properly spinner option from destinationPlace name
-                ArrayAdapter<Place> arraySpinnerDestinationPlace = (ArrayAdapter<Place>)
-                        spinnerDestinationPlace.getAdapter();
-                int destinationPos = ServicesPlace.getPositionFromArrayAdapter(
-                        arraySpinnerDestinationPlace, routine.getDestinationPlace().toString());
-                spinnerDestinationPlace.setSelection(destinationPos);
-                textDestinationDateTime.setText(UtilsDateTime.convertDateTimeToString(
-                        routine.getEndDateTime()));
-
-                // Copy routine origin and destination date time to originDate and destinationDate
-                // This is done in case user only updates places and doesn't update dates
-                originDate      = new Date(routine.getStartDateTime().getTime());
-                destinationDate = new Date(routine.getEndDateTime().getTime());
-
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if(routine == null) {
+                finish();
+                return;
             }
+
+            // Select properly spinner option from originPlace name
+            ArrayAdapter<Place> arraySpinnerOriginPlace = (ArrayAdapter<Place>)
+                    spinnerOriginPlace.getAdapter();
+            int originPos = ServicesPlace.getPositionFromArrayAdapter(
+                    arraySpinnerOriginPlace, routine.getOriginPlace().toString());
+            spinnerOriginPlace.setSelection(originPos);
+            textOriginDateTime.setText(UtilsDateTime.convertDateTimeToString(
+                    routine.getStartDateTime()));
+
+            // Select properly spinner option from destinationPlace name
+            ArrayAdapter<Place> arraySpinnerDestinationPlace = (ArrayAdapter<Place>)
+                    spinnerDestinationPlace.getAdapter();
+            int destinationPos = ServicesPlace.getPositionFromArrayAdapter(
+                    arraySpinnerDestinationPlace, routine.getDestinationPlace().toString());
+            spinnerDestinationPlace.setSelection(destinationPos);
+            textDestinationDateTime.setText(UtilsDateTime.convertDateTimeToString(
+                    routine.getEndDateTime()));
+
+            // Copy routine origin and destination date time to originDate and destinationDate
+            // This is done in case user only updates places and doesn't update dates
+            originDate      = new Date(routine.getStartDateTime().getTime());
+            destinationDate = new Date(routine.getEndDateTime().getTime());
+
 
             actionBar.setTitle(R.string.update_routine_txt_bar_title);
             textRegisterRoutineTitle.setText(R.string.update_routine_txt_title);
@@ -239,19 +233,12 @@ public class RegisterRoutineActivity extends AppCompatActivity
 
         placeList = null;
 
-        try {
-            DatabaseHelper connection = DatabaseHelper.getInstance(this);
+        placeList = ServicesPlace.getPlaceList(this);
 
-            placeList = connection.getPlaceDAO()
-                    .queryBuilder()
-                    .orderBy(Place.ID, true)
-                    .query();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        if(placeList.size() > 1) {
+        if(placeList == null) {
+            finish();
+            return;
+        } else if(placeList.size() > 1) {
             ArrayAdapter<Place> spinnerPlaceAdapter = new ArrayAdapter<Place>(this,
                     android.R.layout.simple_list_item_1,
                     placeList);
@@ -280,50 +267,36 @@ public class RegisterRoutineActivity extends AppCompatActivity
 
         if (mode == CHANGE) {
 
-            try {
+            routine.setOriginPlace(originPlace);
+            routine.setDestinationPlace(destinationPlace);
+            routine.setName(originPlace + " > " + destinationPlace +
+                    " - " + UtilsDateTime.convertDateToString(originDate));
+            routine.setStartDateTime(originDate);
+            routine.setEndDateTime(destinationDate);
 
-                DatabaseHelper connection = DatabaseHelper.getInstance(this);
-
-                routine.setOriginPlace(originPlace);
-                routine.setDestinationPlace(destinationPlace);
-                routine.setName(originPlace + " > " + destinationPlace +
-                        " - " + UtilsDateTime.convertDateToString(originDate));
-                routine.setStartDateTime(originDate);
-                routine.setEndDateTime(destinationDate);
-                connection.getRoutineDAO().update(routine);
-
+            if(ServicesRoutine.updateRoutine(routine, this)) {
                 Intent intent = new Intent();
                 intent.putExtra(ID, routine.getId());
 
                 setResult(Activity.RESULT_OK, intent);
                 finish();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } else Toast.makeText(this, R.string.txt_error_msg_update_routine_toast, Toast.LENGTH_SHORT).show();
 
         } else {
 
             Date originDateStart = Calendar.getInstance().getTime();
 
-            try {
+            routine.setOriginPlace(originPlace);
+            routine.setDestinationPlace(destinationPlace);
+            routine.setName(originPlace + " > " + destinationPlace +
+                    " - " + UtilsDateTime.convertDateToString(originDateStart));
+            routine.setStartDateTime(originDateStart);
 
-                DatabaseHelper connection = DatabaseHelper.getInstance(this);
-
-                routine.setOriginPlace(originPlace);
-                routine.setDestinationPlace(destinationPlace);
-                routine.setName(originPlace + " > " + destinationPlace +
-                        " - " + UtilsDateTime.convertDateToString(originDateStart));
-                routine.setStartDateTime(originDateStart);
-                connection.getRoutineDAO().create(routine);
+            if(ServicesRoutine.createRoutine(routine, this)) {
                 saveRoutineInCourse(routine);
-
                 setResult(Activity.RESULT_OK);
                 finish();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } else Toast.makeText(this, R.string.txt_error_msg_register_routine_toast, Toast.LENGTH_SHORT).show();
         }
 
     }
