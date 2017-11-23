@@ -11,8 +11,16 @@ import me.davikawasaki.routineapp.userroutineapp.R;
  * Created by kawasaki on 16/11/17.
  */
 
+/**
+ * Utility Class with Graphical User Interface Manipulations.
+ */
 public class UtilsGUI {
 
+    /***
+     * Build and show a modalError from AlertDialog Builder.
+     * @param context
+     * @param textId
+     */
     public static void modalError(Context context, int textId) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -24,15 +32,20 @@ public class UtilsGUI {
         builder.setNeutralButton(R.string.txt_button_ok_modal,
                 new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
+                    public void onClick(DialogInterface dialog, int which) {}
                 });
 
         AlertDialog alert = builder.create();
         alert.show();
     }
 
+    /**
+     * Build and show a modalConfirm from AlertDialog Builder.
+     * Receives a listener to attach with buttons.
+     * @param context
+     * @param msg
+     * @param listener
+     */
     public static void modalConfirm(Context context,
                                     String msg,
                                     DialogInterface.OnClickListener listener) {
@@ -51,6 +64,13 @@ public class UtilsGUI {
         alert.show();
     }
 
+    /**
+     * Checks emptiness of textFields to show an error or return a trimmed version.
+     * @param context
+     * @param editText
+     * @param errorId
+     * @return text/null
+     */
     public static String checkTextField(Context  context,
                                         EditText editText,
                                         int errorId) {
