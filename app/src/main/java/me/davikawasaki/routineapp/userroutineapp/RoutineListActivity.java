@@ -180,7 +180,6 @@ public class RoutineListActivity extends AppCompatActivity {
             setResult(Activity.RESULT_OK);
             finish();
         } else if (requestCode == REQUEST_CHANGE_ROUTINE && resultCode == Activity.RESULT_OK){
-            System.out.println("After update routine");
             Bundle bundle = data.getExtras();
             int routineId = bundle.getInt(RegisterRoutineActivity.ID);
 
@@ -249,17 +248,9 @@ public class RoutineListActivity extends AppCompatActivity {
     private void fillRoutineList() {
         routineList = null;
 
-        try {
-            DatabaseHelper connection = DatabaseHelper.getInstance(this);
+        routineList = ServicesRoutine.getRoutineList(this);
 
-            routineList = connection.getRoutineDAO()
-                    .queryBuilder()
-                    .orderBy(Routine.ID, true)
-                    .query();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        if(routineList == null) routineList = new ArrayList<Routine>();
 
         adapterRoutineList = new ArrayAdapter<Routine>(this,
                 android.R.layout.simple_list_item_1,
