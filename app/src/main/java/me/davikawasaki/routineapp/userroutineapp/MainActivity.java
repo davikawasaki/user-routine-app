@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Listener for other activity result incomes.
      * 1. If result is from a success new routine or routine list, try to recover routine in course;
-     * 2. If result is from a success changed routine, recover updated ID and change it in listView.
+     * 2. If result is from a success changed routine, recover updated ID and change it in listView;
      * 3. Just fill routine list.
      * @param requestCode
      * @param resultCode
@@ -389,7 +389,6 @@ public class MainActivity extends AppCompatActivity {
      * @param position
      */
     private void changeRoutine(int position) {
-
         selectedPosition = position;
         Routine routine = routineList.get(selectedPosition);
 
@@ -489,7 +488,7 @@ public class MainActivity extends AppCompatActivity {
         // Step 2
         if(routineList == null) {
             routineList = new ArrayList<Routine>();
-            Toast.makeText(MainActivity.this,
+            Toast.makeText(this,
                     R.string.txt_error_ormlite, Toast.LENGTH_SHORT).show();
         }
 
