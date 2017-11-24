@@ -2,7 +2,7 @@
 
 User Routine Manager Android App developed as last project for mobile college course.
 
-![Application Routine In Course](https://raw.githubusercontent.com/davikawasaki/user-routine-app/master/img/08_ user_routine_app_demo_routine_in_course.png)
+![Application Routine In Course](https://raw.githubusercontent.com/davikawasaki/user-routine-app/master/img/08_user_routine_app_demo_routine_in_course.png)
 
 ## TECHNOLOGIES & LIBRARIES
 
@@ -66,6 +66,7 @@ The basic project structure, with some hidden files, is as follows:
 The model domain relationships is as below:
 
 1\. Routine-Place: 1-1 (with two types of places - origin and destination)
+
 2\. Place-PlaceType: 1-1
 
 ## REFERENCES
